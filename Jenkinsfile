@@ -25,6 +25,13 @@ pipeline {
   agent any
 
   stages {
+        // Git Checkout stage
+    stage('Git Checkout'){
+      steps{
+        git branch: 'main', credentialsId: 'cred', url: 'https://github.com/aleksandrakojic/EKS-Terraform-Jenkins'
+      }
+    }
+    
     // Destroy infrastructure if 'destroy' action is selected
     stage('Terraform Destroy') {
       when {
@@ -32,7 +39,8 @@ pipeline {
       }
       steps {
         echo '** WARNING: Destroying infrastructure. Ensure proper backups and approvals. **'
-        def userInput = input(id: 'ConfirmDestroy', message: 'Destroy Terraform changes?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Destroy Terraform', name: 'ConfirmDestroy'] ])        
+        def input = input(id: 'ConfirmDestroy', message: 'Destroy Terraform changes?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Destroy Terraform', name: 'ConfirmDestroy'] ])
+        
       }
     }
     stage('Terraform Destroy (if selected)') {
@@ -41,13 +49,6 @@ pipeline {
       }
       steps {
         sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform destroy -auto-approve"
-      }
-    }
-
-    // Git Checkout stage
-    stage('Git Checkout'){
-      steps{
-        git branch: 'main', credentialsId: 'cred', url: 'https://github.com/aleksandrakojic/EKS-Terraform-Jenkins'
       }
     }
 
