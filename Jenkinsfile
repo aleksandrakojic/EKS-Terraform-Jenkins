@@ -26,7 +26,7 @@ pipeline {
 
   stages {
     // Destroy infrastructure if 'destroy' action is selected
-    stage('Terraform Destroy (if selected)') {
+    stage('Terraform Destroy') {
       when {
         expression { params.ACTION == 'destroy' }
       }
