@@ -32,10 +32,15 @@ pipeline {
       }
       steps {
         echo '** WARNING: Destroying infrastructure. Ensure proper backups and approvals. **'
-        def userInput = input(id: 'ConfirmDestroy', message: 'Destroy Terraform changes?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Destroy Terraform', name: 'ConfirmDestroy'] ])
-        if (userInput) {
-            sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform destroy -auto-approve"
-        }
+        def userInput = input(id: 'ConfirmDestroy', message: 'Destroy Terraform changes?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Destroy Terraform', name: 'ConfirmDestroy'] ])        
+      }
+    }
+    stage('Terraform Destroy (if selected)') {
+      when {
+        expression { params.ACTION == 'destroy' }
+      }
+      steps {
+        sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform destroy -auto-approve"
       }
     }
 
