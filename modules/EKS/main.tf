@@ -37,7 +37,6 @@ data "aws_ami" "amazon_linux_2" {
 resource "aws_instance" "kubectl-server" {
   ami                         = data.aws_ami.amazon_linux_2.id
   key_name                    = var.key_name
-  instance_type               = var.instance_size
   associate_public_ip_address = true
   subnet_id                   = var.public_subnet_az1_id
   vpc_security_group_ids      = [var.eks_security_group_id]
