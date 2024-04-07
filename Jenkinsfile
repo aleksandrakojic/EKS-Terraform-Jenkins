@@ -32,73 +32,65 @@ pipeline {
       }
     }
     
-    // Destroy infrastructure if 'destroy' action is selected
+    // Terraform Destroy stage
     stage('Terraform Destroy') {
-      when {
+    when {
         expression { params.ACTION == 'destroy' }
-      }
-      steps {
+    }
+    steps {
         echo '** WARNING: Destroying infrastructure. Ensure proper backups and approvals. **'
         def input = input(id: 'ConfirmDestroy', message: 'Destroy Terraform changes?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Destroy Terraform', name: 'ConfirmDestroy'] ])
         
-      }
-    }
-    stage('Terraform Destroy (if selected)') {
-      when {
-        expression { params.ACTION == 'destroy' }
-      }
-      steps {
         sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform destroy -auto-approve"
-      }
+    }
     }
 
     // Terraform Init stage
     stage('Terraform Init'){
-      steps{
+    steps{
         sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform init"
-      }
+    }
     }
 
     // Terraform Plan stage
     stage('Terraform Plan'){
-      steps{
+    steps{
         sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform plan"
-      }
+    }
     }
 
     // Approval stage (for apply action)
     stage('Approval (apply only)') {
-      when {
+    when {
         expression { params.ACTION == 'apply' }
-      }
-      steps {
+    }
+    steps {
         script {
-          def userInput = input(id: 'ConfirmApply', message: 'Apply Terraform changes?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply Terraform', name: 'ConfirmApply'] ])
-          if (!userInput) {
+        def userInput = input(id: 'ConfirmApply', message: 'Apply Terraform changes?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply Terraform', name: 'ConfirmApply'] ])
+        if (!userInput) {
             error 'Terraform apply cancelled by user.'
-          }
         }
-      }
+        }
+    }
     }
 
-    // Apply infrastructure if 'apply' action is selected
-    stage('Terraform Apply (if selected)') {
-      when {
+    // Terraform Apply stage
+    stage('Terraform Apply') {
+    when {
         expression { params.ACTION == 'apply' }
-      }
-      steps {
+    }
+    steps {
         sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform apply -auto-approve"
-      }
+    }
     }
 
-    // Update EKS kubeconfig (apply only)
-    stage('Update EKS kubeconfig (apply only)') {
-      when {
+    // Update EKS kubeconfig stage
+    stage('Update EKS kubeconfig') {
+    when {
         expression { params.ACTION == 'apply' }
-      }
-      steps {
-        sh "aws eks update-kubeconfig --region ${env.region} --name ${env.cluster_name}"
-      }
     }
-  }
+    steps {
+        sh "aws eks update-kubeconfig --region ${env.region} --name ${env.cluster_name}"
+    }
+    }
 }
