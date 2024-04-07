@@ -1,5 +1,6 @@
 # Creating EKS Cluster
 resource "aws_eks_cluster" "eks" {
+  name     = var.cluster_name
   role_arn = var.master_arn
 
   vpc_config {
