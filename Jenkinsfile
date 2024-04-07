@@ -48,5 +48,10 @@ pipeline {
                sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform apply -auto-approve"   
             }
         }
+        stage('Update EKS kubeconfig') {
+            steps{
+                sh "aws eks update-kubeconfig --region ${env.region} --name ${env.cluster_name}"
+            }
+        }
     }
   }

@@ -16,13 +16,13 @@ resource "aws_eks_cluster" "eks" {
 # Using Data Source to get all Avalablility Zones in Region
 data "aws_availability_zones" "available_zones" {}
 
-# Fetching Ubuntu 20.04 AMI ID
+# Fetching instance AMI ID
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20231207"]
   }
 
   filter {
@@ -30,7 +30,7 @@ data "aws_ami" "amazon_linux_2" {
     values = ["hvm"]
   }
 
-  owners = ["099720109477"]
+  owners = ["amazon"] 
 }
 
 # Creating kubectl server
