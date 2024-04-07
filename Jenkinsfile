@@ -2,7 +2,7 @@ properties([ parameters([
   string( name: 'CLUSTER_NAME', defaultValue: ''),
   string( name: 'AWS_REGION', defaultValue: ''),
   string( name: 'WORKER_NODE_COUNT', defaultValue: ''),
-  string( name: 'WORKER_NODE_SIZE', defaultValue: ''),
+  string( name: 'WORKER_NODE_SIZE', defaultValue: 't3.medium'),
 ]), pipelineTriggers([]) ])
 
 // Environment Variables.
@@ -48,8 +48,17 @@ pipeline {
                sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform apply -auto-approve"   
             }
         }
-        stage('Update EKS kubeconfig') {
-            steps{
+        stage('Terraform') {
+            steps {
+                sh "export TF_VAR_region='${env.region}' && export TF_VAR_cluster_name='${env.cluster_name}' && export TF_VAR_instance_count='${env.instance_count}' && export TF_VAR_instance_size='${env.instance_size}' && terraform ${params.ACTION} -auto-approve"
+            }
+        }
+
+        stage('Update EKS kubeconfig (apply only)') {
+            when {
+                expression { params.ACTION == 'apply' }
+        }
+            steps {
                 sh "aws eks update-kubeconfig --region ${env.region} --name ${env.cluster_name}"
             }
         }
